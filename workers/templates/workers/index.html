@@ -1,0 +1,53 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Worker Data</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Address</th>
+                <th>Contact Info</th>
+                <th>Medical History</th>
+                <th>Safety Breaches</th>
+            </tr>
+        </thead>
+        <tbody id="worker-data">
+        </tbody>
+    </table>
+</div>
+
+<!-- Include Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<!-- Fetch worker data using jQuery -->
+<script>
+    $(document).ready(function() {
+        $.ajax({
+            url: '/api/workers/',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                console.log('Data:', data);
+
+                $.each(data.results, function(i, worker) {
+                    var row = '<tr>' +
+                        '<td>' + worker.name + '</td>' +
+                        '<td>' + worker.age + '</td>' +
+                        '<td>' + worker.address + '</td>' +
+                        '<td>' + worker.contact_info + '</td>' +
+                         '<td>' + worker.medical_history + '</td>' +
+                         '<td>' + worker.safety_breaches + '</td>' +
+                        '</tr>';
+                    $('#worker-data').append(row);
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+                
+            }
+        });
+    });
+</script>
+{% endblock content %}
