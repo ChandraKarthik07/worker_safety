@@ -3,31 +3,55 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
-
+from rest_framework.authentication import SessionAuthentication,BasicAuthentication
+from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from .models import Worker,worker_company
 from .serializers import WorkerSerializer,WorkercompanySerializer
 from django.shortcuts import render
-@api_view(['GET','POST'])
-def worker_list(request):
-    if request.method=='GET':
-        workers = Worker.objects.all()
+# @api_view(['GET','POST'])
+# def worker_list(request):
+#     authentication_classes=[SessionAuthentication]
+#     permission_classes=[IsAuthenticated]
+#     if request.method=='GET':
+#         workers = Worker.objects.all()
         
-        serializer = WorkerSerializer(workers, many=True)
-        return Response(serializer.data)
-    if request.method=='POST':
-        workers=Worker.objects.create(name=request.data['name'],age=request.data['age'],address=request.data['address'],contact_info=request.data['contact_info'],medical_history=request.data['medical_history'],safety_breaches=request.data['safety_breaches'])
+#         serializer = WorkerSerializer(workers, many=True)
+#         return Response(serializer.data)
+    
+#     if request.method=='POST':
+#         workers=Worker.objects.create(name=request.data['name'],age=request.data['age'],address=request.data['address'],contact_info=request.data['contact_info'],medical_history=request.data['medical_history'],safety_breaches=request.data['safety_breaches'])
+#         workers.save()
+#         serializer=WorkerSerializer(workers,many=False)
+#         return Response(serializer.data)
+class worker_list(APIView):
+    authentication_classes=[SessionAuthentication]
+    permission_classes=[AllowAny]
+    # def get_object(self):
+    #     try:
+    #         return Worker
+    #     except:
+    #         raise Http404
+    def post(self,request):
+        self.permission_classes=[IsAuthenticated]
+        workers=Worker.objects.create(**request.data)
         workers.save()
         serializer=WorkerSerializer(workers,many=False)
         return Response(serializer.data)
+    def get(self,request):
+        self.permission_classes=[AllowAny]
+        workers = Worker.objects.all()
+        serializer = WorkerSerializer(workers, many=True)
+        return Response(serializer.data)
+    
     
 class create_worker(APIView):
+    authentication_classes=[SessionAuthentication]
+    permission_classes=[IsAuthenticated]
     def get_object(self,pk):
         try:
             return Worker.objects.get(name=pk)
         except Worker.DoesNotExist:
-            raise Http404
-         
-            
+            raise Http404    
     def get(self,request,pk):
         workers=self.get_object(pk)
         serializer = WorkerSerializer(workers)
