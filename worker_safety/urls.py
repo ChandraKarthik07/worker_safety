@@ -19,11 +19,15 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
-from workers.views import worker_data
+from workers.views import worker_data,worker_list
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r'workers', worker_list)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', worker_data, name='worker_data'),
-    path('api/', include('workers.urls')),
+    path('api/', include(router.urls)),
     path('auth/',include('rest_framework.urls',namespace='restframework')),
 ]
 urlpatterns+=static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

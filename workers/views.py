@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status ,pagination,viewsets
 from django.http import Http404
 from rest_framework.authentication import SessionAuthentication,BasicAuthentication
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
@@ -23,28 +23,34 @@ from django.shortcuts import render
 #         workers.save()
 #         serializer=WorkerSerializer(workers,many=False)
 #         return Response(serializer.data)
-class worker_list(APIView):
-    authentication_classes=[SessionAuthentication]
-    permission_classes=[AllowAny]
-    # def get_object(self):
-    #     try:
-    #         return Worker
-    #     except:
-    #         raise Http404
-    def post(self,request):
-        self.permission_classes=[IsAuthenticated]
-        workers=Worker.objects.create(**request.data)
-        workers.save()
-        serializer=WorkerSerializer(workers,many=False)
-        return Response(serializer.data)
-    def get(self,request):
-        self.permission_classes=[AllowAny]
-        workers = Worker.objects.all()
-        serializer = WorkerSerializer(workers, many=True)
-        return Response(serializer.data)
+
+# class worker_list(APIView):
+#     pagination_class = PageNumberPagination
+#     authentication_classes = [SessionAuthentication]
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         workers = Worker.objects.create(**request.data)
+#         workers.save()
+#         serializer = WorkerSerializer(workers, many=False)
+#         return Response(serializer.data)
+
+#     def get(self, request):
+#         workers = Worker.objects.all()
+#         paginator = self.pagination_class()
+#         page = paginator.paginate_queryset(workers, request)
+#         if page is not None:
+#             serializer = WorkerSerializer(page, many=True)
+#             return paginator.get_paginated_response(serializer.data)
+#         serializer = WorkerSerializer(workers, many=True)
+#         return Response(serializer.data)
+class worker_list(viewsets.ModelViewSet):
+    queryset=Worker.objects.all()
+    serializer_class=WorkerSerializer
     
     
 class create_worker(APIView):
+    pagination_class = pagination.PageNumberPagination
     authentication_classes=[SessionAuthentication]
     permission_classes=[IsAuthenticated]
     def get_object(self,pk):
@@ -54,8 +60,14 @@ class create_worker(APIView):
             raise Http404    
     def get(self,request,pk):
         workers=self.get_object(pk)
-        serializer = WorkerSerializer(workers)
+        paginator=self.pagination_class()
+        page =paginator.paginate_queryset(workers,request)
+        if page is not None:
+            serializer=WorkerSerializer(page,many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = WorkerSerializer(workers,many=True)
         return Response(serializer.data)
+    
     def put(self,request,pk):
         workers=self.get_object(pk)
         # workers.update(name=request.data['name'],age=request.data['age'],address=request.data['address'],contact_info=request.data['contact_info'],medical_history=request.data['medical_history'],safety_breaches=request.data['safety_breaches'])
