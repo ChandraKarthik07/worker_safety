@@ -7,7 +7,7 @@ from rest_framework.authentication import SessionAuthentication,BasicAuthenticat
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from .models import Worker,worker_company
 from .serializers import WorkerSerializer,WorkercompanySerializer
-from django.shortcuts import render
+from django.shortcuts import render ,get_object_or_404
 # @api_view(['GET','POST'])
 # def worker_list(request):
 #     authentication_classes=[SessionAuthentication]
@@ -47,9 +47,12 @@ from django.shortcuts import render
 class worker_list(viewsets.ModelViewSet):
     queryset=Worker.objects.all()
     serializer_class=WorkerSerializer
+    def retrieve(self,request,pk=None):
+        worker=get_object_or_404(self.queryset,name=pk)
+        serializer=WorkerSerializer(worker)
+        return Response(serializer.binddata)
     
-    
-class create_worker(APIView):
+# class create_worker(APIView):
     pagination_class = pagination.PageNumberPagination
     authentication_classes=[SessionAuthentication]
     permission_classes=[IsAuthenticated]
